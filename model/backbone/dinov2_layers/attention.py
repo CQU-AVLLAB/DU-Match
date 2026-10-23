@@ -12,6 +12,7 @@ import logging
 
 from torch import Tensor
 from torch import nn
+from torch.nn import functional as F
 
 
 logger = logging.getLogger("dinov2")
@@ -38,6 +39,7 @@ class Attention(nn.Module):
     ) -> None:
         super().__init__()
         self.num_heads = num_heads
+        self.use_torch_sdpa = False  # Opt-in; preserve the original default path.
         head_dim = dim // num_heads
         self.scale = head_dim**-0.5
 
@@ -49,6 +51,13 @@ class Attention(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         B, N, C = x.shape
         qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
+        if self.use_torch_sdpa:
+            q, k, v = qkv.unbind(0)
+            # SDPA applies the standard head-dimension scaling internally.
+            x = F.scaled_dot_product_attention(q, k, v,
+                dropout_p=self.attn_drop.p if self.training else 0.0)
+            x = x.transpose(1, 2).reshape(B, N, C)
+            return self.proj_drop(self.proj(x))
 
         q, k, v = qkv[0] * self.scale, qkv[1], qkv[2]
         attn = q @ k.transpose(-2, -1)
@@ -64,7 +73,7 @@ class Attention(nn.Module):
 
 class MemEffAttention(Attention):
     def forward(self, x: Tensor, attn_bias=None) -> Tensor:
-        if not XFORMERS_AVAILABLE:
+        if self.use_torch_sdpa or not XFORMERS_AVAILABLE:
             assert attn_bias is None, "xFormers is required for nested tensors usage"
             return super().forward(x)
 

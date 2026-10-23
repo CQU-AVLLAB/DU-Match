@@ -138,17 +138,23 @@ class DPT(nn.Module):
         for p in self.backbone.parameters():
             p.requires_grad = False
     
-    def forward(self, x, comp_drop=False):
+    def forward(self, x, comp_drop=False, return_features=False):
         patch_h, patch_w = x.shape[-2] // 14, x.shape[-1] // 14
         
         features = self.backbone.get_intermediate_layers(
             x, self.intermediate_layer_idx[self.encoder_size]
         )
         
+        if return_features and comp_drop:
+            raise ValueError('Return unperturbed encoder features only from the weak/labeled branch')
+        encoder_map = None
+        if return_features:
+            encoder_map = features[-1].transpose(1, 2).reshape(x.shape[0], -1, patch_h, patch_w)
+
         if comp_drop:
             bs, dim = features[0].shape[0], features[0].shape[-1]
             
-            dropout_mask1 = self.binomial.sample((bs // 2, dim)).cuda() * 2.0
+            dropout_mask1 = self.binomial.sample((bs // 2, dim)).to(x.device) * 2.0
             dropout_mask2 = 2.0 - dropout_mask1
             dropout_prob = 0.5
             num_kept = int(bs // 2 * (1 - dropout_prob))
@@ -169,4 +175,4 @@ class DPT(nn.Module):
         out = self.head(features, patch_h, patch_w)
         out = F.interpolate(out, (patch_h * 14, patch_w * 14), mode='bilinear', align_corners=True)
         
-        return out
+        return (out, encoder_map) if return_features else out

@@ -44,3 +44,24 @@ venv/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Weights and generated artifacts
+*.bin
+*.ckpt
+*.h5
+*.hdf5
+*.onnx
+*.pickle
+*.pkl
+*.pt
+*.pth
+*.safetensors
+pretrained/
+checkpoints/
+exp/
+training-logs/
+analysis_*/
+visual_results*/
+expected_paper_figures/
+__pycache__/
+*.pyc

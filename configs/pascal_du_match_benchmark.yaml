@@ -1,0 +1,34 @@
+dataset: pascal
+data_root: /home/chenyang/datasets/pascal
+nclass: 21
+crop_size: 518
+epochs: 60
+batch_size: 1
+lr: 3.125e-07
+lr_multi: 40.0
+criterion:
+  name: CELoss
+  kwargs:
+    ignore_index: 255
+conf_thresh: 0.95
+model: dpt
+backbone: dinov2_base
+lock_backbone: false
+du_match:
+  prototype_source: student
+  warmup_iters: 10
+  prototype_momentum: 0.99
+  variance_momentum: 0.99
+  variance_floor: 0.01
+  min_updates: 1
+  chunk_rows: 16
+  prediction_threshold: 0.2
+  feature_threshold: 0.7
+  prototype_temperature: 0.5
+  gamma_min: 0.0
+  gamma_max: 0.8
+  lambda_ambiguous: 1.0
+  lambda_suspicious: 1.0
+  lambda_u: 1.0
+  alpha: 1.0
+  beta: 1.0
