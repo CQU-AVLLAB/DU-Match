@@ -1,0 +1,21 @@
+# arguments for dataset
+dataset: pascal
+data_root: /home/chenyang/datasets/pascal
+nclass: 21
+crop_size: 518
+
+# arguments for training
+epochs: 60
+batch_size: 1
+lr: 0.0000003125
+lr_multi: 40.0
+criterion:
+  name: CELoss
+  kwargs:
+    ignore_index: 255
+conf_thresh: 0.95
+
+# arguments for model
+model: dpt
+backbone: dinov2_base
+lock_backbone: False
