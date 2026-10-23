@@ -1,10 +1,6 @@
-# DU-Match：在 UniMatch V2 上的独立改进副本
+# DU-Match 技术说明
 
-原项目：`/home/chenyang/UniMatch-V2`。工作副本：`/home/chenyang/DU-Match`。
-原项目没有进行写入。完整复制了代码、已有结果、预训练权重和 Git 历史。
-副本的原始 `unimatch_v2.py`、数据增强与原始配置保留，新增训练入口 `du_match.py`。
-原有文件中只修改了副本的 `model/semseg/dpt.py`，使其可选返回最后一层 DINOv2 patch 特征；没有新增投影头。
-默认前向输出和互补扰动分支经过数值回归，与原项目逐位一致。
+DU-Match 基于 UniMatch V2 扩展，新增训练入口 `du_match.py`、双空间可靠性建模、原型统计与软目标纠正。本文记录实现细节和实验限制。文中的本地路径是开发环境示例，使用时请替换为自己的路径。
 
 ## 运行
 
